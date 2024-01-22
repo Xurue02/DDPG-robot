@@ -40,10 +40,11 @@ class robot_env(gym.Env):
         # TODO: Add better environment observation space (more circle or algorithm that make automatically)
         self.observation_space = (space)
 
-    def reward_calculation(self,u):# reward is -(e^2)  
-    '''
-    The reward is designed to be the negative square of the Euclidean distance between the current position of the robot and its goal position
-    '''
+    def reward_calculation(self,u): 
+        '''
+          The reward is designed to be the negative square of the Euclidean distance between the current position of the robot and its goal position
+        '''
+        # reward is -(e^2)
         x,y,goal_x,goal_y = self.state # Get the current state as x,y,goal_x,goal_y
         dt =  self.dt # Time step
         
@@ -173,10 +174,61 @@ class robot_env(gym.Env):
             # print(goal_x,goal_y)
             new_goal_x, new_goal_y = self.observation_space.clip([goal_x,goal_y])
             # print(new_goal_x, new_goal_y)
-            
+
         # States of the robot in numpy array
         self.state = np.array([new_x,new_y,new_goal_x,new_goal_y])
         
         return self._get_obs(), -1*self.costs, done, {} # Return the observation, the reward (-costs) and the done flag
 
-    def reset(self):
+    def reset(self): 
+
+        # Random state of the robot 
+        ## Randomly choose two phi values within the range
+        ## Set the seed for reproducibility
+        np.random.seed(42)
+        # Generate two random values for phi in radians within the range from -180 to 180 degrees
+        self.phi1 = np.radians(np.random.uniform(low=-180, high=180))
+        self.phi2 = np.radians(np.random.uniform(low=-180, high=180))
+
+        # Random curvatures 
+        self.k1 = np.random.uniform(low=-10, high=16)
+        self.k2 = np.random.uniform(low=-10, high=16)
+        # pcc calculation
+        Tip_of_Rob = two_section_robot(self.k1,self.k2,self.l,self.phi1,self.phi2) 
+        x,y,z = np.array([Tip_of_Rob[0,3],Tip_of_Rob[1,3],Tip_of_Rob[2,3]]) # Extract the x,y and z coordinates of the tip
+
+        # Random target point
+        # (Random curvatures are given so that forward kinematics equation will generate random target position)
+        self.target_k1 = np.random.uniform(low=-10, high=16) # 6.2 # np.random.uniform(low=-4, high=16)
+        self.target_k2 = np.random.uniform(low=-10, high=16) # 6.2 # np.random.uniform(low=-4, high=16)
+        # pcc calculation
+        Tip_target = two_section_robot(self.target_k1,self.target_k2,self.l,self.phi1,self.phi2) # Generate the target point for the robot
+        goal_x,goal_y,goal_z = np.array([T3_target[0,3],T3_target[1,3],T3_target[2,3]]) # Extract the x and y coordinates of the target
+       
+        self.state = x,y,z,goal_x,goal_y,goal_z # Update the state of the robot
+       
+        self.last_u = None
+        return self._get_obs()
+
+    def _get_obs(self):
+        x,y,z,goal_x,goal_y,goal_z = self.state
+        return np.array([x,y,z,goal_x,goal_y,goal_z],dtype=np.float32)
+    
+    def render_calculate(self):
+        # current state
+
+        # segment 1
+        T1 = trans_matrix(self.k1,self.l[0],self.phi1) #get transformation matrix reshaped in [1*16] in n array within length l and with size
+        T1_tip = np.reshape(T1[len(T1)-1,:],(4,4),order='F'); #reshape to 4*4 matrix
+
+        # segment 2
+        T2_cc = trans_matrix(self.k2,self.l[1],self.phi2);#get reshaped transformation matrix of the section 2 
+        T2 = multiple_trans_matrix(T2_cc,T1_tip); # multiply T1 and T2 to get the robot transformation matrix
+        T2_tip = np.reshape(T2[len(T2)-1,:],(4,4),order='F');# reshape to 4*4 matrix
+
+        self.position_dic['Section1']['x'].append(T1[:,12])
+        self.position_dic['Section1']['y'].append(T1[:,13])
+        self.position_dic['Section1']['z'].append(T1[:,14])
+        self.position_dic['Section2']['x'].append(T2[:,12])
+        self.position_dic['Section2']['y'].append(T2[:,13])
+        self.position_dic['Section1']['z'].append(T1[:,14])

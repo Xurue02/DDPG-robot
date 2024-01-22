@@ -31,11 +31,15 @@ else:
 l = 0.06 # meter, same length for every segment
 
 ## Randomly choose two k values within the range
-k_range = (-(5 * math.pi) / 3, (5 * math.pi) / 3)
-k1, k2 = np.random.uniform(*k_range, size=2)
+##k_range = (-(5 * math.pi) / 3, (5 * math.pi) / 3)
+##k_range = (-16,16)
+##k1, k2 = np.random.uniform(*k_range, size=2)
 # Constraint for the curvature
-k1 = max(-(5 * math.pi) / 3, min(k1, (5 * math.pi) / 3))
-k2 = max(-(5 * math.pi) / 3, min(k2, (5 * math.pi) / 3))
+##k1 = max(-(5 * math.pi) / 3, min(k1, (5 * math.pi) / 3))
+##k2 = max(-(5 * math.pi) / 3, min(k2, (5 * math.pi) / 3))
+
+k1 = np.random.uniform(low=-10, high=16)
+k2 = np.random.uniform(low=-10, high=16)
 print(f"Randomly chosen k1: {k1}")
 print(f"Randomly chosen k2: {k2}")
 
@@ -62,11 +66,15 @@ T2_cc = trans_matrix(k2,l,phi2);#get reshaped transformation matrix of the secti
 T2 = multiple_trans_matrix(T2_cc,T1_tip); # multiply T1 and T2 to get the robot transformation matrix
 T2_tip = np.reshape(T2[len(T2)-1,:],(4,4),order='F');# reshape to 4*4 matrix
 #print('T2 transmatrix\n',T2);
-print('tip of the robot\n',T2_tip);
+#print('tip of the robot\n',T2_tip);
 l=[0.06,0.06];
 
 Tip_of_Rob = two_section_robot(k1,k2,l,phi1,phi2)
 print('tip of robo should be same as tip of the robot as above\n',Tip_of_Rob)
+x,y,z = np.array([Tip_of_Rob[0,3],Tip_of_Rob[1,3],Tip_of_Rob[2,3]])
+print('x,y,z are\n',x,y,z)
+
+
 
 # Plot the 3D diagram python pcc_calculation.py
 fig = plt.figure()
