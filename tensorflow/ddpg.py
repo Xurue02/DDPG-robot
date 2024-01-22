@@ -26,10 +26,10 @@ print("Min Value of Action ->  {}".format(lower_bound))
 start_time = time.time()
 
 class OUActionNoise:
-    """
+    '''
     It creates a correlated noise with mean-reverting behavious based on provious value; 
     injecting controlled randomness into the actions of an agen can promote exploration and improve learning performance
-    """
+    '''
     
     def __init__(self, mean, std_deviation, theta=0.15, dt=1e-2, x_initial=None):
         '''
@@ -182,7 +182,7 @@ def get_actor():
     # Output layer with 3 actions: num_actions units and tanh activation, initialized with last_init
     outputs = layers.Dense(num_actions, activation="tanh", kernel_initializer=last_init)(out)
 
-    # Our upper bound is 1.0 for Continuum Robot (Kappa dot).
+    # Our upper bound is 1.0 for Continuum Robot (k dot).
     # Scale the outputs by the upper_bound to match the action space
     outputs = outputs * upper_bound # * env.dt
 
@@ -281,9 +281,9 @@ if TRAIN:
             print("===============================================================")
             print("Target Position is",prev_state[2:4])
             print("===============================================================")
-            print("Initial Kappas are ",[env.kappa1,env.kappa2,env.kappa3])
+            print("Initial curvatures are ",[env.k1,env.k2])
             print("===============================================================")
-            print("Goal Kappas are ",[env.target_k1,env.target_k2,env.target_k3])
+            print("Goal curvatures are ",[env.target_k1,env.target_k2])
             print("===============================================================")
         
         # time.sleep(2) # uncomment when training in local computer
@@ -291,19 +291,13 @@ if TRAIN:
     
         # while True:
         for i in range(1000):
-            # Uncomment this to see the Actor in action
-            # But not in a python notebook.
             # env.render()
     
             tf_prev_state = tf.expand_dims(tf.convert_to_tensor(prev_state), 0)
-            action = policy(tf_prev_state, ou_noise)
+            action = policy(tf_prev_state, ou_noise) #get action
     
             # Recieve state and reward from environment.
-            state, reward, done, info = env.step_minus_euclidean_square(action[0]) # -e^2
-            # state, reward, done, info = env.step_minus_weighted_euclidean(action[0]) # -0.7*e
-            # state, reward, done, info = env.step_error_comparison(action[0]) # reward is -1.00 or -0.50 or 1.00
-            # state, reward, done, info = env.step_distance_based(action[0]) # reward is du-1 - du
-            
+            state, reward, done, info = env.reward_calculation(action[0]) # reward is -e^2
             buffer.record((prev_state, action, reward, state))
             episodic_reward += reward
     
@@ -323,7 +317,7 @@ if TRAIN:
             # print("Goal Position",prev_state[2:4])
             # # print("Previous Error: {0}, Error: {1}, Current State: {2}".format(env.previous_error, env.error, prev_state)) # for step_1
             # print("Error: {0}, Current State: {1}".format(math.sqrt(-1*reward), prev_state)) # for step_2
-            # print("Action: {0},  Kappas {1}".format(action, [env.kappa1,env.kappa2,env.kappa3]))
+            # print("Action: {0},  ks {1}".format(action, [env.k1,env.k2,env.k3]))
             # print("Reward is ", reward)
             # print("{0} times robot reached to the target".format(counter))
             # print("Avg Reward is {0}, Episodic Reward is {1}".format(avg_reward,episodic_reward))
