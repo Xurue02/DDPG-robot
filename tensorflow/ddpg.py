@@ -27,12 +27,13 @@ print("Max Value of Action ->  {}".format(upper_bound))
 print("Min Value of Action ->  {}".format(lower_bound))
 start_time = time.time()
 
+
 class OUActionNoise:
     '''
     It creates a correlated noise with mean-reverting behavious based on provious value; 
     injecting controlled randomness into the actions of an agen can promote exploration and improve learning performance
     '''
-    
+
     def __init__(self, mean, std_deviation, theta=0.15, dt=1e-2, x_initial=None):
         '''
         initializes the parameters of the OU process, with an optional initial vallue
@@ -56,8 +57,7 @@ class OUActionNoise:
             + self.theta * (self.mean - self.x_prev) * self.dt
             + self.std_dev * np.sqrt(self.dt) * np.random.normal(size=self.mean.shape)
         )
-        # Store x into x_prev
-        
+        # Store x into x_prev        
         self.x_prev = x
         return x
     
@@ -166,7 +166,15 @@ class Buffer:
         # Call the update method to perform the learning step
         self.update(state_batch, action_batch, reward_batch, next_state_batch)
 
-        # ========================================================================= #
+
+# This update target parameters slowly
+# Based on rate `tau`, which is much less than one.
+@tf.function
+def update_target(target_weights, weights, tau):
+    for (a, b) in zip(target_weights, weights):
+        a.assign(b * tau + a * (1 - tau))
+
+#       # ========================================================================= #
 	    #                              Model Definitions                            #
         # ========================================================================= #
 
@@ -277,11 +285,13 @@ if TRAIN:
         # high = np.array([0.18, 0.3], dtype=np.float32)
         # low = np.array([-0.25, -0.1], dtype=np.float32)
         # env.q_goal = np.random.uniform(low=low, high=high)
+        # x y xg yg    x y z xg yg zg
+        # 0 1 2  3     0 1 2 3  4  5
         if ep % 100 == 0:
             print('Episode Number',ep)
-            print("Initial Position is",prev_state[0:2])
+            print("Initial Position is",prev_state[0:3])
             print("===============================================================")
-            print("Target Position is",prev_state[2:4])
+            print("Target Position is",prev_state[3:6])
             print("===============================================================")
             print("Initial curvatures are ",[env.k1,env.k2])
             print("===============================================================")
@@ -366,8 +376,9 @@ if TRAIN:
     print('Total Overshoot 0: ', env.overshoot0)
     print('Total Overshoot 1: ', env.overshoot1)
     print('Total Elapsed Time is:',int(end_time)/60)
+
 else:
-    actor_model.load_weights("../Keras/fixed_goal/reward_step_minus_weighted_euclidean/model/continuum_actor.h5")
-    critic_model.load_weights("../Keras/fixed_goal/reward_step_minus_weighted_euclidean/model/continuum_critic.h5")
-    target_actor.load_weights("../Keras/fixed_goal/reward_step_minus_weighted_euclidean/model/continuum_target_actor.h5")
-    target_critic.load_weights("../Keras/fixed_goal/reward_step_minus_weighted_euclidean/model/continuum_target_critic.h5")
+    actor_model.load_weights("../tensorflow/fixed_goal/model/continuum_actor.h5")
+    critic_model.load_weights("../tensorflow/fixed_goal/model/continuum_critic.h5")
+    target_actor.load_weights("../tensorflow/fixed_goal/model/continuum_target_actor.h5")
+    target_critic.load_weights("../tensorflow/fixed_goal/model/continuum_target_critic.h5")

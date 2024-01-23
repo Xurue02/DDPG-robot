@@ -8,7 +8,7 @@ from gym import spaces          # "spaces" for the observation and action space
 import matplotlib.pyplot as plt # quick "plot" library
 from matplotlib.animation import FuncAnimation # make animation
 from kinematics.pcc_forward import trans_matrix,multiple_trans_matrix,two_section_robot
-#from AmorphousSpace import AmorphousSpace
+from visualspaces import visualspaces
 
 class robot_env(gym.Env):
     def __init__(self):
@@ -35,11 +35,11 @@ class robot_env(gym.Env):
         # Define the observation and action space from OpenAI Gym
         high = np.array([0.2, 0.3, 0.16, 0.3], dtype=np.float32) # [0.16, 0.3, 0.16, 0.3]
         low  = np.array([-0.3, -0.15, -0.27, -0.11], dtype=np.float32) # [-0.27, -0.11, -0.27, -0.11]
-        self.action_space = spaces.Box(low=-1*self.k_dot_max, high=self.k_dot_max,shape=(3,), dtype=np.float32)
+        self.action_space = spaces.Box(low=-1*self.k_dot_max, high=self.k_dot_max,shape=(2,), dtype=np.float32)
         ########
         
         # TODO: Add better environment observation space (more circle or algorithm that make automatically)
-        self.observation_space = (space)
+        self.observation_space = (visualspaces)
 
     def reward_calculation(self,u): 
         '''
