@@ -237,10 +237,13 @@ class robot_env(gym.Env):
         self.position_dic['Section2']['y'].append(T2[:,13])
         self.position_dic['Section2']['z'].append(T1[:,14])
 
-     def render_init(self):
+    def render_init(self):
         # This function is used to plot the robot in the environment (both in start and end state)
         self.fig = plt.figure()
         self.fig.set_dpi(75);
+        self.ax = plt.axes();
+        
+    def render_init(self):
         self.ax = plt.axes();
 
     def render_update(self,i):
