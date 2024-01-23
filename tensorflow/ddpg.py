@@ -4,6 +4,7 @@ sys.path.append('../environment')
 sys.path.append('../tests')
 
 import tensorflow as tf
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 from tensorflow.keras import layers
 import pickle
 import numpy as np
@@ -11,6 +12,7 @@ import matplotlib.pyplot as plt
 import time
 import math
 from env import robot_env
+
 env = robot_env()
 
 num_states = env.observation_space.shape[0] * 2 # multiply by 2 because we have also goal state
