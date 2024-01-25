@@ -49,12 +49,12 @@ class robot_env(gym.Env):
           Reward is -(e^2)
         '''
         
-        x,y,goal_x,goal_y = self.state # Get the current state as x,y,goal_x,goal_y
+        x,y,z,goal_x,goal_y,goal_z = self.state # Get the current state as x,y,goal_x,goal_y
         dt =  self.dt # Time step
         
         u = np.clip(u, -self.k_dot_max, self.k_dot_max) # Clip the input to the range of the -1,1
         
-        self.error = ((goal_x-x)**2)+((goal_y-y)**2) # Calculate the error squared
+        self.error = ((goal_x-x)**2)+((goal_y-y)**2)+((goal_z-z)**2) # Calculate the error squared
         self.costs = self.error # Set the cost (reward) to the error squared
         
         # Just to show if the robot is moving along the goal or not
