@@ -1,0 +1,5 @@
+gym==0.26.2
+ipython==8.11.0
+matplotlib==3.5.1
+numpy==1.22.0
+tensorflow==2.12.0
