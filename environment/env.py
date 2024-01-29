@@ -17,8 +17,8 @@ class robot_env(gym.Env):
         self.k_max = 16.00       # max curvature for the robot
         self.k_min = -4.00       # min curvature for the robot
         
-        l1 = 0.06000;               # first segment of the robot in meters
-        l2 = 0.06000;               # second segment of the robot in meters
+        l1 = 0.6000;               # first segment of the robot in meters
+        l2 = 0.6000;               # second segment of the robot in meters
         self.stop = 0               # variable to make robot not move after exeeding max, min general k value
         self.l = [l1, l2]           # stores the length of each segment of the robot
         self.dt =  5e-2             # sample sizes
@@ -70,62 +70,6 @@ class robot_env(gym.Env):
             done = False
          
         
-        # This if and else statement is to avoid the robot to move if the ks are at the limits
-        if self.stop == 0:
-            self.J = jacobian_matrix(self.delta_k, self.k1, self.k2, self.k3, self.l)
-            x_vel = self.J @ u
-            state_update = x_vel * dt
-            new_x = x + state_update[0]
-            new_y = y + state_update[1]
-            
-        elif self.stop == 1:
-            self.J = jacobian_matrix(self.delta_k, self.k1, self.k2, self.k3, self.l)
-            x_vel = self.J @ np.append([0],u[1:3])
-            state_update = x_vel * dt
-            new_x = x + state_update[0]
-            new_y = y + state_update[1]
-        
-        elif self.stop == 2:
-            self.J = jacobian_matrix(self.delta_k, self.k1, self.k2, self.k3, self.l)
-            x_vel = self.J @ np.append(np.append(u[0],[0]),u[2])
-            state_update = x_vel * dt
-            new_x = x + state_update[0]
-            new_y = y + state_update[1]
-            
-        elif self.stop == 3:
-            self.J = jacobian_matrix(self.delta_k, self.k1, self.k2, self.k3, self.l)
-            x_vel = self.J @ np.append(u[0:2],[0])
-            state_update = x_vel * dt
-            new_x = x + state_update[0]
-            new_y = y + state_update[1]
-            
-        elif self.stop == 4:
-            self.J = jacobian_matrix(self.delta_k, self.k1, self.k2, self.k3, self.l)
-            x_vel = self.J @ np.append([0,0],u[2])
-            state_update = x_vel * dt
-            new_x = x + state_update[0]
-            new_y = y + state_update[1]
-        
-        elif self.stop == 5:
-            self.J = jacobian_matrix(self.delta_k, self.k1, self.k2, self.k3, self.l)
-            x_vel = self.J @  np.append(np.append([0],u[1]),[0])
-            state_update = x_vel * dt
-            new_x = x + state_update[0]
-            new_y = y + state_update[1]
-        
-        elif self.stop == 6:
-            self.J = jacobian_matrix(self.delta_k, self.k1, self.k2, self.k3, self.l)
-            x_vel = self.J @ np.append(u[0],[0,0])
-            state_update = x_vel * dt
-            new_x = x + state_update[0]
-            new_y = y + state_update[1]
-            
-        elif self.stop == 7:
-            pass
-            # # UNCOMMENT HERE!!!!!!!
-            # print("Robot is not moving")
-            # time.sleep(1)
-        
         # Update the curvatures
         self.k1 += u[0] * dt 
         self.k2 += u[1] * dt      
@@ -136,51 +80,59 @@ class robot_env(gym.Env):
         self.k2 = np.clip(self.k2, self.k_min, self.k_max)
 
         # To check which curvature value are at the limits
-        self.stop = 0
+
+        #self.stop = 0
+        #self.J = jacobian_matrix(self.delta_k, self.k1, self.k2, self.k3, self.l)
+         #x_vel = self.J @ u
+        x_vel = u
+        state_update = x_vel * dt
+        new_x = x + state_update[0]
+        new_y = y + state_update[1]
+        new_z = z + state_update[1]
+
+
         k1 = self.k1 <= self.k_min or self.k1 >= self.k_max
         k2 = self.k2 <= self.k_min or self.k2 >= self.k_max
         
         if k1:
-            self.stop = 1
+            x_vel = u
+            state_update = x_vel * dt
+            new_x = x + state_update[0]
+            new_y = y + state_update[1]
+            new_z = z + state_update[1]
             
         elif k2:
-            self.stop = 2
-            
-        elif k3:
-            self.stop = 3
+            x_vel = u
+            state_update = x_vel * dt
+            new_x = x + state_update[0]
+            new_y = y + state_update[1]
+            new_z = z + state_update[1]
         
-        if k1 and k2:
-            self.stop = 4
+        elif k1 and k2:
+            print("Robot is not moving")
+            time.sleep(1)
         
-        elif k1 and k3:
-            self.stop = 5
         
-        elif k2 and k3:
-            self.stop = 6
-            
-        if k1 and k2 and k3:
-            self.stop = 7
-        
-        if self.observation_space.contains([new_x, new_y]):
+        if self.observation_space.contains([new_x, new_y,new_z]):
             pass
         else:
             # Clip the states to avoid the robot to go out of the workspace
             self.overshoot0 += 1
-            # print(new_x, new_y)
-            new_x, new_y = self.observation_space.clip([new_x,new_y])
-            # print(new_x, new_y)
+            # print(new_x, new_y,new_z)
+            new_x, new_y, new_z = self.observation_space.clip([new_x,new_y,new_z])
+            # print(new_x, new_y,new_z)
 
-        if self.observation_space.contains([goal_x, goal_y]):
-            new_goal_x, new_goal_y = goal_x, goal_y
+        if self.observation_space.contains([goal_x, goal_y,goal_z]):
+            new_goal_x, new_goal_y,new_goal_z = goal_x, goal_y,goal_z
         else:
             # Clip the states to avoid the robot to go out of the workspace
             self.overshoot1 += 1
-            # print(goal_x,goal_y)
-            new_goal_x, new_goal_y = self.observation_space.clip([goal_x,goal_y])
-            # print(new_goal_x, new_goal_y)
+            # print(goal_x,goal_y,goal_z)
+            new_goal_x, new_goal_y,new_goal_z = self.observation_space.clip([goal_x,goal_y,goal_z])
+            # print(new_goal_x, new_goal_y, new_goal_z)
 
         # States of the robot in numpy array
-        self.state = np.array([new_x,new_y,new_goal_x,new_goal_y])
+        self.state = np.array([new_x,new_y,new_z,new_goal_x,new_goal_y,new_goal_z])
         
         return self._get_obs(), -1*self.costs, done, {} # Return the observation, the reward (-costs) and the done flag
 
