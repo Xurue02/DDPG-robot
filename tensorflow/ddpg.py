@@ -323,17 +323,13 @@ if TRAIN:
                 break
     
             prev_state = state
-            # print(prev_state)
-            # # Uncomment below when training in local computer
-            # print("Episode Number {0} and {1}th action".format(ep,i))
-            # print("Goal Position",prev_state[2:4])
-            # # print("Previous Error: {0}, Error: {1}, Current State: {2}".format(env.previous_error, env.error, prev_state)) # for step_1
-            # print("Error: {0}, Current State: {1}".format(math.sqrt(-1*reward), prev_state)) # for step_2
-            # print("Action: {0},  ks {1}".format(action, [env.k1,env.k2,env.k3]))
-            # print("Reward is ", reward)
-            # print("{0} times robot reached to the target".format(counter))
-            # print("Avg Reward is {0}, Episodic Reward is {1}".format(avg_reward,episodic_reward))
-            # print("--------------------------------------------------------------------------------")
+
+            if i % 200 == 0: # print on terminal every 200 actions.
+                print("Episode Number {0} and {1}th action".format(ep,i))
+                print("Goal Position",prev_state[3:6])
+                print("Previous Error: {0}, Error: {1}, Current State: {2}".format(env.previous_error, env.error, prev_state[0:3])) 
+                print("Action: {0},  Reward is {1}".format(action, reward))
+            
     
         ep_reward_list.append(episodic_reward)
     
@@ -362,6 +358,7 @@ if TRAIN:
     plt.xlabel('Episode')
     plt.ylabel('Average Reward')
     plt.show()
+    plt.savefig('../figures/training_rewards/rewards.png')
 
     with open('ep_reward_list.pickle', 'wb') as f:
         # Pickle the 'data' dictionary using the highest protocol available.
