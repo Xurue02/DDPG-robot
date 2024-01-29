@@ -303,10 +303,10 @@ if TRAIN:
     
         # while True:
         for i in range(1000):
-            # env.render()
     
             tf_prev_state = tf.expand_dims(tf.convert_to_tensor(prev_state), 0)
-            action = policy(tf_prev_state, ou_noise) #get action
+            ##### meeds to be modified!!!!!
+            action = policy(tf_prev_state, ou_noise) #get action 
     
             # Recieve state and reward from environment.
             state, reward, done, info = env.reward_calculation(action[0]) # reward is -e^2
