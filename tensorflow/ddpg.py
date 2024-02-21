@@ -16,15 +16,15 @@ from env import robot_env
 env = robot_env()
 
 num_states = env.observation_space.shape[0] * 2 # multiply by 2 because we have also goal state
-print("Size of State Space ->  {}".format(num_states))
+print("Size of State Space ->  {}".format(num_states));
 num_actions = env.action_space.shape[0]
-print("Size of Action Space ->  {}".format(num_actions))
+print("Size of Action Space ->  {}".format(num_actions));
 
 upper_bound = env.action_space.high[0]
 lower_bound = env.action_space.low[0]
 
-print("Max Value of Action ->  {}".format(upper_bound))
-print("Min Value of Action ->  {}".format(lower_bound))
+print("Max Value of Action ->  {}".format(upper_bound));
+print("Min Value of Action ->  {}".format(lower_bound));
 start_time = time.time()
 
 
@@ -131,9 +131,7 @@ class Buffer:
             critic_loss = tf.math.reduce_mean(tf.math.square(y - critic_value))
 
         critic_grad = tape.gradient(critic_loss, critic_model.trainable_variables)
-        critic_optimizer.apply_gradients(
-            zip(critic_grad, critic_model.trainable_variables)
-        )
+        critic_optimizer.apply_gradients(zip(critic_grad, critic_model.trainable_variables))
 
         with tf.GradientTape() as tape:
             actions = actor_model(state_batch, training=True)
@@ -256,6 +254,13 @@ target_critic = get_critic()
 target_actor.set_weights(actor_model.get_weights())
 target_critic.set_weights(critic_model.get_weights())
 
+# Learning rate for actor-critic models
+critic_lr = 1e-3        # learning rate of the critic
+actor_lr = 1e-4         # learning rate of the actor
+
+critic_optimizer = tf.keras.optimizers.Adam(critic_lr)
+actor_optimizer = tf.keras.optimizers.Adam(actor_lr)
+
 total_episodes = 250
 # Discount factor for future rewards
 gamma = 0.99            # discount factor
@@ -302,11 +307,11 @@ if TRAIN:
         episodic_reward = 0
     
         # while True:
-        for i in range(1000):
+        for i in range(2000):
+            # env.render()
     
             tf_prev_state = tf.expand_dims(tf.convert_to_tensor(prev_state), 0)
-            ##### meeds to be modified!!!!!
-            action = policy(tf_prev_state, ou_noise) #get action 
+            action = policy(tf_prev_state, ou_noise) #get action
     
             # Recieve state and reward from environment.
             state, reward, done, info = env.reward_calculation(action[0]) # reward is -e^2
@@ -320,16 +325,22 @@ if TRAIN:
             # End this episode when `done` is True
             if done:
                 counter += 1
+                print(f"reached the {counter} times")
                 break
     
             prev_state = state
-
-            if i % 200 == 0: # print on terminal every 200 actions.
+            # print(prev_state)
+            # # Uncomment below when training in local computer
+            if i % 500 == 0:
                 print("Episode Number {0} and {1}th action".format(ep,i))
                 print("Goal Position",prev_state[3:6])
-                print("Previous Error: {0}, Error: {1}, Current State: {2}".format(env.previous_error, env.error, prev_state[0:3])) 
-                print("Action: {0},  Reward is {1}".format(action, reward))
-            
+                print("Previous Error: {0}, Error: {1}, Current State: {2}".format(env.previous_error, env.error, prev_state[0:3])) # for step_1
+            # print("Error: {0}, Current State: {1}".format(math.sqrt(-1*reward), prev_state)) # for step_2
+            # print("Action: {0},  ks {1}".format(action, [env.k1,env.k2,env.k3]))
+            # print("Reward is ", reward)
+            # print("{0} times robot reached to the target".format(counter))
+            # print("Avg Reward is {0}, Episodic Reward is {1}".format(avg_reward,episodic_reward))
+            # print("--------------------------------------------------------------------------------")
     
         ep_reward_list.append(episodic_reward)
     
@@ -343,6 +354,7 @@ if TRAIN:
     print(f'{counter} times robot reached the target point in total {total_episodes} episodes')
     # Plotting graph
     # Episodes versus Avg. Rewards
+
     plt.subplot(1, 2, 1)
     plt.plot(np.arange(1, len(avg_reward_list)+1), avg_reward_list)
     plt.xlabel("Episode")
@@ -358,7 +370,6 @@ if TRAIN:
     plt.xlabel('Episode')
     plt.ylabel('Average Reward')
     plt.show()
-    plt.savefig('../figures/training_rewards/rewards.png')
 
     with open('ep_reward_list.pickle', 'wb') as f:
         # Pickle the 'data' dictionary using the highest protocol available.
