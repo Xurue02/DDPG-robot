@@ -30,3 +30,6 @@ Then flollow `Execution` steps.
 
 -- Commit & Push
 
+## Matlab Code.zip
+ - This zip file contains the Matlab code of the project, which include the forward kinematics simulation, IMU camera calibration.
+
