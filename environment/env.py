@@ -12,7 +12,7 @@ from visualspaces import visualspaces
 
 class robot_env(gym.Env):
     def __init__(self):
-        self.delta_k = 0.001     # necessary for the numerical differentiation
+        self.delta_k = 0.001     # necessary for the numerical differentiation mm
         self.k_dot_max = 1.000   # max derivative of curvature
         self.k_max = 16.00       # max curvature for the robot
         self.k_min = -4.00       # min curvature for the robot
